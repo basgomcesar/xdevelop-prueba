@@ -5,5 +5,5 @@
 // Bulk actions (borrado masivo o cambio de rol). 
 // Tambien se uitilza useMutation de React Query para las acciones de los usuarios.
 export default function UsersPage() {
-  return <div>Users Page</div>;
+  return <main className="ml-10 mt-10"><h1 className="text-2xl ">Users</h1></main>;
 }

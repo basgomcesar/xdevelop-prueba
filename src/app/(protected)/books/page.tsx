@@ -3,5 +3,5 @@
 // Mostrar detalle del libro seleccionado. 
 
 export default function BooksPage() {
-    return <div>Books Page</div>;
+  return <main className="ml-10 mt-10"><h1 className="text-2xl ">Books</h1></main>;
 }
