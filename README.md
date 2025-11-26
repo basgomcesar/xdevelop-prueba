@@ -1,36 +1,122 @@
-This is a [Next.js](https://nextjs.org) project bootstrapped with [`create-next-app`](https://nextjs.org/docs/app/api-reference/cli/create-next-app).
+# Resumen del proyecto
+Proyecto de ejemplo que implementa la prueba técnica usando Next.js (App Router), TypeScript, Zustand, TanStack Query/Table, Shadcn UI, manejo de cookies y APIs públicas (ReqRes, JSONPlaceholder, OpenLibrary).
 
-## Getting Started
+---
 
-First, run the development server:
+## Tecnologías principales
+| Tecnología | Uso principal |
+|---|---|
+| Next.js 15 (App Router) | Estructura, rutas, CSR/SSR, middleware |
+| TypeScript | Tipado estricto |
+| Zustand | Estado global (auth, roles, favoritos) |
+| TanStack Query | Data-fetching, cache, mutations, optimistic updates |
+| TanStack Table | Tablas dinámicas con paginación real |
+| TailwindCSS + Shadcn UI | UI y componentes accesibles |
+| Next.js Cookies API | Manejo de tokens, refresh, logout |
+| ReqRes / JSONPlaceholder / OpenLibrary | APIs públicas usadas por features |
 
-```bash
-npm run dev
-# or
-yarn dev
-# or
-pnpm dev
-# or
-bun dev
+---
+
+## Estructura del proyecto
+```
+src/
+ ├── app/
+ │   ├── (protected)/
+ │   │    ├── books/
+ │   │    ├── posts/
+ │   │    └── users/
+ │   ├── api/
+ │   │    └── bulk/  (simulacion de bulk usuarios)
+ │   ├── login/
+ │   ├── globals.css
+ │   ├── layout.tsx
+ │   ├── page.tsx
+ │   └── providers.tsx
+ ├── components/
+ │   ├── ui/  (botones, inputs, modales, sidebar)
+ │   ├── app-sidebar.tsx
+ │   ├── books-filter.tsx
+ │   ├── books-table.tsx
+ │   └── user-table.tsx
+ ├── hooks/           (useUsers, usePosts, useBooks, useAuth)
+ ├── lib/             (queryClient, fetchWrapper, utils)
+ ├── services/        (reqres, jsonplaceholder, openlibrary)
+ ├── stores/          (auth.store, favorites.store)
+ └── utils/
 ```
 
-Open [http://localhost:3000](http://localhost:3000) with your browser to see the result.
+---
 
-You can start editing the page by modifying `app/page.tsx`. The page auto-updates as you edit the file.
+## Autenticación
+Flujo:
+- Login → `POST /api/auth/login`
+- Cookies:
+    - `accessToken`: cookie accesible por JS
+    - `refreshToken`: HttpOnly, Secure, SameSite=Lax
+- Refresh automático via `POST /api/auth/refresh` usado por `fetchWrapper.ts`
+- Logout → `POST /api/auth/logout` (limpia cookies y Zustand)
+- Protección de rutas con `middleware.ts` (bloqueo de `/users`, `/posts`, `/books` sin token)
 
-This project uses [`next/font`](https://nextjs.org/docs/app/building-your-application/optimizing/fonts) to automatically optimize and load [Geist](https://vercel.com/font), a new font family for Vercel.
+---
 
-## Learn More
+## Módulos principales
 
-To learn more about Next.js, take a look at the following resources:
+### Gestión de usuarios — ReqRes
+- Tabla con TanStack Table y paginación real (`GET /api/users?page=`)
+- Búsqueda frontend, filtros simulados por rol, bulk actions (borrar/cambiar rol)
+- Archivo principal: `src/components/user-table.tsx`
 
-- [Next.js Documentation](https://nextjs.org/docs) - learn about Next.js features and API.
-- [Learn Next.js](https://nextjs.org/learn) - an interactive Next.js tutorial.
+### Posts — JSONPlaceholder
+- Listado de posts por usuario, detalle con comentarios
+- Crear/editar con TanStack Mutation y optimistic updates
+- Permisos por rol (solo admin crea/edita)
+- Favoritos guardados en Zustand
+- Rutas: `src/app/(protected)/posts`
 
-You can check out [the Next.js GitHub repository](https://github.com/vercel/next.js) - your feedback and contributions are welcome!
+### Buscador de Libros — Open Library
+- Búsqueda por título, filtros por autor/año
+- Paginación usando `start` / `numFound`
+- Detalle en `src/app/(protected)/books/[id]`
+- Archivos clave: `books-table.tsx`, `books-filter.tsx`, `useBooks.ts`
 
-## Deploy on Vercel
+---
 
-The easiest way to deploy your Next.js app is to use the [Vercel Platform](https://vercel.com/new?utm_medium=default-template&filter=next.js&utm_source=create-next-app&utm_campaign=create-next-app-readme) from the creators of Next.js.
+## Buenas prácticas aplicadas
+- Arquitectura modular (hooks, stores, services, components)
+- Tipado fuerte en servicios y hooks
+- Manejo de loading y errores
+- Diseño responsive con Tailwind + Shadcn UI
+- Cookies y refresh correctamente implementados
+- Código comentado en puntos críticos (auth, refresh, optimistic updates)
 
-Check out our [Next.js deployment documentation](https://nextjs.org/docs/app/building-your-application/deploying) for more details.
+---
+
+## Cómo ejecutar
+```bash
+git clone <repo-url>
+cd <project-folder>
+npm install
+npm run dev
+# Visitar: http://localhost:3000/login
+```
+
+---
+
+## Variables de entorno (ejemplo)
+```
+# No se requieren secretos reales; APIs son públicas
+NEXT_PUBLIC_API_URL=https://reqres.in/api
+NEXT_PUBLIC_JSONPLACEHOLDER=https://jsonplaceholder.typicode.com
+NEXT_PUBLIC_OPENLIBRARY=https://openlibrary.org
+```
+
+---
+
+## Scripts útiles
+```bash
+npm run dev     # Desarrollo
+npm run build   # Build producción
+npm run start   # Ejecutar build
+npm run lint    # Linting
+npm run test    # Tests
+```
