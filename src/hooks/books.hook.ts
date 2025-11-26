@@ -10,6 +10,14 @@ export const useBooks = (params: {
   return useQuery({
     queryKey: ["books", params],
     queryFn: () => booksService.searchBooks(params),
-    keepPreviousData: true, // paginación suave
+    keepPreviousData: true, 
+  } as any);
+};
+
+export const useBookDetails = (workKey: string | null) => {
+  return useQuery({
+    queryKey: ["book-details", workKey],
+    queryFn: () => booksService.getBookDetails(workKey!),
+    enabled: !!workKey, 
   } as any);
 };

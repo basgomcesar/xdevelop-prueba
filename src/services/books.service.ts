@@ -23,4 +23,9 @@ export const booksService = {
 
     return res.json();
   },
-};
+  async getBookDetails(workID: string) {
+    const res = await fetch(`${BASE_URL}/works/${workID}.json`);
+    if (!res.ok) throw new Error("Error fetching book details");
+    return res.json();
+  },
+}

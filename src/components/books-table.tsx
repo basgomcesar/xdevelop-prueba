@@ -5,14 +5,27 @@ import {
   getCoreRowModel,
   flexRender,
 } from "@tanstack/react-table";
+import { useRouter } from "next/navigation";
+
+import {
+  Table,
+  TableHeader,
+  TableRow,
+  TableHead,
+  TableBody,
+  TableCell,
+  TableCaption,
+} from "@/components/ui/table";
 
 type Book = {
   title: string;
   author_name?: string;
   first_publish_year?: number;
+  [key: string]: any;
 };
 
 export function BooksTable({ data }: { data: Book[] }) {
+  const router = useRouter();
   const columns = [
     { accessorKey: "title", header: "Título" },
     { accessorKey: "author_name", header: "Autor" },
@@ -26,30 +39,30 @@ export function BooksTable({ data }: { data: Book[] }) {
   });
 
   return (
-    <table className="w-full border rounded">
-      <thead>
+    <Table className="w-full">
+      <TableHeader>
         {table.getHeaderGroups().map((hg) => (
-          <tr key={hg.id}>
+          <TableRow key={hg.id}>
             {hg.headers.map((h) => (
-              <th key={h.id} className="p-2 border">
+              <TableHead key={h.id}>
                 {flexRender(h.column.columnDef.header, h.getContext())}
-              </th>
+              </TableHead>
             ))}
-          </tr>
+          </TableRow>
         ))}
-      </thead>
+      </TableHeader>
 
-      <tbody>
+      <TableBody>
         {table.getRowModel().rows.map((row) => (
-          <tr key={row.id}>
+          <TableRow className="cursor-pointer hover:bg-gray-100" key={row.id} onClick={() => router.push(`/books/${row.original.key}`)}>
             {row.getVisibleCells().map((cell) => (
-              <td key={cell.id} className="p-2 border">
+              <TableCell key={cell.id}>
                 {flexRender(cell.column.columnDef.cell, cell.getContext())}
-              </td>
+              </TableCell>
             ))}
-          </tr>
+          </TableRow>
         ))}
-      </tbody>
-    </table>
+      </TableBody>
+    </Table>
   );
 }
