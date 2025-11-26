@@ -12,6 +12,7 @@ type User = {
     id: number | string;
     first_name: string;
     email: string;
+    role?: string;
     [key: string]: any;
 };
 
@@ -19,31 +20,67 @@ interface UsersTableProps {
     data?: User[];
     total: number;
     totalPages: number;
-    page: number;         
+    page: number;
     setPage: (p: number) => void;
     pageSize: number;
     setPageSize: (s: number) => void;
+    selectedIds: (number | string)[];
+    onToggleSelection: (id: number | string) => void;
+    onSelectAll: (ids: (number | string)[]) => void;
 }
 
 export default function UsersTable({
-    data,
-    total,
+    data = [],
     totalPages,
     page,
     setPage,
     pageSize,
     setPageSize,
+
+    selectedIds = [],
+    onToggleSelection,
+    onSelectAll,
 }: UsersTableProps) {
+
+    const allIds = data.map((d) => d.id);
+    const allSelected =
+        allIds.length > 0 && allIds.every((id) => selectedIds.includes(id));
+
+    const columns = [
+        {
+            id: "select",
+            size: 40,
+            header: () => (
+                <input
+                    type="checkbox"
+                    checked={allSelected}
+                    onChange={() =>
+                        onSelectAll(allSelected ? [] : allIds)
+                    }
+                />
+            ),
+            cell: ({ row }: any) => {
+                const id = row.original.id;
+                return (
+                    <input
+                        type="checkbox"
+                        checked={selectedIds.includes(id)}
+                        onChange={() => onToggleSelection(id)}
+                    />
+                );
+            },
+        },
+        { accessorKey: "id", header: "ID" },
+        { accessorKey: "first_name", header: "Nombre" },
+        { accessorKey: "email", header: "Email" },
+        { accessorKey: "role", header: "Rol" },
+    ];
+
     const table = useReactTable({
-        data: data ?? [],
-        columns: [
-            { accessorKey: "id", header: "ID" },
-            { accessorKey: "first_name", header: "Nombre" },
-            { accessorKey: "email", header: "Email" },
-            { accessorKey: "role", header: "Rol" },
-        ],
+        data,
+        columns,
         manualPagination: true,
-        pageCount: totalPages, 
+        pageCount: totalPages,
         state: {
             pagination: {
                 pageIndex: page,
@@ -56,6 +93,9 @@ export default function UsersTable({
                     ? updater({ pageIndex: page, pageSize })
                     : updater;
 
+            if (next.pageIndex < 0) return;
+            if (next.pageIndex >= totalPages) return;
+
             setPage(next.pageIndex);
             setPageSize(next.pageSize);
         },
@@ -63,8 +103,8 @@ export default function UsersTable({
     });
 
     return (
-        <div className="border rounded-md w-full">
-            <Table className="w-full">
+        <div className="border rounded-md w-full overflow-hidden">
+            <Table className="w-full bg-white dark:bg-gray-800">
                 <TableHeader>
                     {table.getHeaderGroups().map((headerGroup) => (
                         <TableRow key={headerGroup.id}>
@@ -72,9 +112,6 @@ export default function UsersTable({
                                 <TableHead
                                     key={header.id}
                                     className="p-2"
-                                    style={{
-                                        width: `${100 / headerGroup.headers.length}%`,
-                                    }}
                                 >
                                     {header.isPlaceholder
                                         ? null
@@ -92,13 +129,7 @@ export default function UsersTable({
                     {table.getRowModel().rows.map((row) => (
                         <TableRow key={row.id} className="border-t">
                             {row.getVisibleCells().map((cell) => (
-                                <td
-                                    key={cell.id}
-                                    className="p-2"
-                                    style={{
-                                        width: `${100 / row.getVisibleCells().length}%`,
-                                    }}
-                                >
+                                <td key={cell.id} className="p-2">
                                     {flexRender(
                                         cell.column.columnDef.cell,
                                         cell.getContext()
@@ -110,7 +141,7 @@ export default function UsersTable({
                 </TableBody>
             </Table>
 
-            <div className="flex items-center justify-between p-2 border-t">
+            <div className="flex items-center justify-between p-2 border-t bg-gray-50 dark:bg-gray-700">
                 <Button
                     onClick={() => setPage(page - 1)}
                     disabled={page === 0}

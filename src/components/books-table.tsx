@@ -39,7 +39,7 @@ export function BooksTable({ data }: { data: Book[] }) {
   });
 
   return (
-    <Table className="w-full">
+    <Table className="w-full border rounded-lg bg-white dark:bg-gray-800">
       <TableHeader>
         {table.getHeaderGroups().map((hg) => (
           <TableRow key={hg.id}>

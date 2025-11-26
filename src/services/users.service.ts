@@ -35,4 +35,15 @@ export const usersService = {
         if (!res.ok) throw new Error("Error al obtener usuarios");
         return res.json();
     }
+    //DELETE bulk simulated
+    ,
+    bulkAction: async (action: 'delete' | 'changeRole', ids: number[], payload?: any) => {
+        const res = await fetch('/api/bulk', {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({ action, ids, payload }),
+        });
+        if (!res.ok) throw new Error('Bulk action failed');
+        return res.json();
+    }
 }

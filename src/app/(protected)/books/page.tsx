@@ -20,7 +20,7 @@ export default function BooksPage() {
   const numFound = (data as any)?.numFound ?? 0;
 
   return (
-    <div className="p-4">
+    <div className="p-6">
       <h1 className="text-2xl">Buscador de Libros</h1>
 
       <BooksFilters onChange={(filters) => setParams({ ...params, page: 1, ...filters })} />

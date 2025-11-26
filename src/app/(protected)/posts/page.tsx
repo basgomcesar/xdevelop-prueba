@@ -1,51 +1,86 @@
-// Página /posts protegida. 
-// Mostrar posts por usuario. 
-// Al entrar a un post, mostrar sus comentarios. 
-// Crear y editar posts con TanStack Query y actualizaciones optimistas. 
-// Guardar posts favoritos en Zustand o IndexedDB. 
-// Datos y Relaciones Avanzadas: JSONPlaceholder 
-// GET /users, GET /posts, GET /posts/:id/comments. 
-// POST /posts y PUT /posts/:id para crear/editar posts. 
-// Estado Global: Zustand. 
-// Data Fetching: TanStack Query (useQuery, useMutation).
 "use client";
-import Link from 'next/link';
-import { usePosts } from '../../../hooks/posts.hooks';
-import { useUsers } from '../../../hooks/users.hooks';
-import { Card } from '@/components/ui/card';
-//Mostrar posts por usuarios
+
+import Link from "next/link";
+import { useState } from "react";
+import { usePosts } from "../../../hooks/posts.hooks";
+import { useUsers } from "../../../hooks/users.hooks";
+
+import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
+import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
+import { Loader2 } from "lucide-react";
+
 
 export default function PostsPage() {
+  const [selectedUser, setSelectedUser] = useState<string>("all");
+
   const { data: posts, isLoading, error } = usePosts();
   const { data: users, isLoading: isLoadingUsers, error: errorUsers } = useUsers();
 
-  if (isLoading || isLoadingUsers) {
-    return <div>Loading...</div>;
-  }
-  if (error || errorUsers) {
-    return <div>Error loading posts</div>;
-  }
-  //Mostrar usuarios en un desplegable 
+  const loading = isLoading || isLoadingUsers;
+  const hasError = error || errorUsers;
 
-  //filtrar posts por usuario
-  return <main className="m-4"><h1 className="text-2xl ">Posts</h1>
-    <div className="flex flex-col gap-4 mt-4 border-t pt-5">
-      {users?.map(user => (
-        <div key={user.id} >{user.name}
-          <div className='flex flex-1 flex-col gap-4 p-4'>
-            <div className="grid auto-rows-min gap-4 md:grid-cols-5">
-              {posts?.filter(post => post.userId === user.id).map(post => (
-                <Link href={`/posts/${post.id}`} key={post.id}>
-                  <Card key={post.id} className="rounded-md border p-4 shadow-sm hover:shadow-md hover:cursor-pointer transition-shadow">
-                    <h2 className="mb-2 text-lg font-semibold">{post.title}</h2>
-                    <p>{post.body}</p>
-                  </Card>
-                </Link>
-              ))}
-            </div>
-          </div>
-        </div>
-      ))}
-    </div>
-  </main>;
+  if (loading) {
+    return (
+      <div className="flex h-[80vh] items-center justify-center flex-col text-muted-foreground">
+        <Loader2 className="animate-spin w-8 h-8 mb-2" />
+        Cargando posts...
+      </div>
+    );
+  }
+
+  if (hasError) {
+    return (
+      <div className="flex h-[80vh] items-center justify-center text-red-600">
+        Error al cargar los posts.
+      </div>
+    );
+  }
+
+  const filteredPosts =
+    selectedUser === "all"
+      ? posts
+      : posts?.filter((post) => post.userId === Number(selectedUser));
+
+  return (
+    <main className="p-6">
+      <h1 className="text-2xl  tracking-tight">Posts</h1>
+
+      <div className="mt-6 max-w-sm">
+        <Select onValueChange={setSelectedUser} defaultValue="all">
+          <SelectTrigger>
+            <SelectValue placeholder="Filtrar por usuario" />
+          </SelectTrigger>
+          <SelectContent>
+            <SelectItem value="all">Todos los usuarios</SelectItem>
+            {users?.map((u) => (
+              <SelectItem key={u.id} value={String(u.id)}>
+                {u.name}
+              </SelectItem>
+            ))}
+          </SelectContent>
+        </Select>
+      </div>
+
+      <div className="mt-8 grid gap-6 sm:grid-cols-2 lg:grid-cols-3 2xl:grid-cols-4">
+        {filteredPosts?.map((post) => (
+          <Link key={post.id} href={`/posts/${post.id}`}>
+            <Card className="group h-full rounded-xl border hover:shadow-lg transition-all cursor-pointer">
+              <CardHeader>
+                <CardTitle className="line-clamp-2 text-lg group-hover:text-primary transition-colors">
+                  {post.title}
+                </CardTitle>
+              </CardHeader>
+              <CardContent className="text-sm text-muted-foreground line-clamp-3">
+                {post.body}
+              </CardContent>
+            </Card>
+          </Link>
+        ))}
+      </div>
+
+      {filteredPosts?.length === 0 && (
+        <p className="text-muted-foreground mt-8">No hay posts para este usuario.</p>
+      )}
+    </main>
+  );
 }

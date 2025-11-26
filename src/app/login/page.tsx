@@ -27,7 +27,7 @@ export default function LoginPage() {
     mutationFn: () => loginService(email, password),
     onSuccess: (token) => {
       login(token);
-      router.push("/posts"); 
+      router.push("/posts");
     },
   });
 
